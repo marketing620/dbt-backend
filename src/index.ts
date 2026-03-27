@@ -1,10 +1,9 @@
+import 'dotenv/config';
 import express, { Express, Request, Response } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import helmet from 'helmet';
 import morgan from 'morgan';
-
-dotenv.config();
+import contactRoutes from './routes/contactRoutes';
 
 const app: Express = express();
 const port = process.env.PORT || 5000;
@@ -20,7 +19,15 @@ app.get('/', (req: Request, res: Response) => {
   res.json({ message: 'Dental Billing API is running!' });
 });
 
-// Start Server
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
-});
+// API Routes
+app.use('/api/contact', contactRoutes);
+
+// Start Server (Only locally, Vercel skips this)
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
+  });
+}
+
+// Export for Vercel
+export default app;
