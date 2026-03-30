@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import contactRoutes from './routes/contactRoutes';
 import authRoutes from './routes/authRoutes';
+import settingsRoutes from './routes/settingsRoutes';
 
 const app: Express = express();
 const port = process.env.PORT || 5000;
@@ -23,6 +24,7 @@ app.get('/', (req: Request, res: Response) => {
 // API Routes
 app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Start Server (Only locally, Vercel skips this)
 if (process.env.NODE_ENV !== 'production') {
