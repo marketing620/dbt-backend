@@ -30,7 +30,7 @@ export const getDashboardAnalytics = async (req: Request, res: Response): Promis
         const snapshot = await db.collection('analytics').orderBy('createdAt', 'desc').limit(5000).get();
         
         let visitorsToday = 0;
-        const totalVisitors = snapshot.docs.length;
+        const seenSessions = new Set<string>();
         const sourceCounts: Record<string, number> = {};
         const dailyCounts: Record<string, number> = {};
 
@@ -39,7 +39,14 @@ export const getDashboardAnalytics = async (req: Request, res: Response): Promis
 
         snapshot.docs.forEach(doc => {
             const data = doc.data();
+            const sid = data.sessionId;
             
+            // Deduplicate by sessionId
+            if (sid && seenSessions.has(sid)) {
+                return; // Skip if already counted this session
+            }
+            if (sid) seenSessions.add(sid);
+
             // Time aggregations
             if (data.createdAt && typeof data.createdAt.toDate === 'function') {
                 const date = data.createdAt.toDate();
@@ -62,6 +69,8 @@ export const getDashboardAnalytics = async (req: Request, res: Response): Promis
             }
             sourceCounts[source]++;
         });
+
+        const totalVisitors = seenSessions.size;
 
         // Format for Recharts (Sources)
         const colors = ["#8884d8", "#83a6ed", "#8dd1e1", "#a4de6c", "#d0ed57", "#ffc658", "#ff7300"];
