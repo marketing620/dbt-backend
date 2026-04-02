@@ -25,6 +25,7 @@ app.get('/', (req: Request, res: Response) => {
 app.use('/api/contact', contactRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/analytics', require('./routes/analyticsRoutes').default);
 
 // Start Server (Only locally, Vercel skips this)
 if (process.env.NODE_ENV !== 'production') {
