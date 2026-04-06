@@ -93,13 +93,37 @@ export const getDashboardAnalytics = async (req: Request, res: Response): Promis
 
         const conversionRate = totalVisitors > 0 ? ((totalLeads / totalVisitors) * 100).toFixed(1) : 0;
 
+        // Fetch recent leads for the dashboard table
+        const recentLeadsSnapshot = await db.collection('contactMessages')
+            .orderBy('createdAt', 'desc')
+            .limit(5)
+            .get();
+            
+        const recentLeads = recentLeadsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            let dateStr = "";
+            if (data.createdAt && typeof data.createdAt.toDate === 'function') {
+                const d = data.createdAt.toDate();
+                dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            }
+            return {
+                id: doc.id,
+                name: data.name || "Unknown",
+                email: data.email || "",
+                service: data.subject || "General",
+                status: data.status || "NEW",
+                date: dateStr
+            };
+        });
+
         res.status(200).json({
             visitorsToday,
             totalVisitors,
             totalLeads,
             conversionRate,
             sourcesData,
-            visitorsOverTime
+            visitorsOverTime,
+            recentLeads
         });
     } catch (error) {
         console.error('Error fetching analytics:', error);
